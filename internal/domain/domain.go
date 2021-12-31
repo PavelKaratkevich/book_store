@@ -1,7 +1,7 @@
 package domain
 
 import (
-	err "book_store/internal/error"
+	err "book_store/internal/response"
 
 	"github.com/lib/pq"
 )

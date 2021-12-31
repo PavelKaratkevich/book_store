@@ -2,7 +2,7 @@ package service
 
 import (
 	"book_store/internal/domain"
-	err "book_store/internal/error"
+	err "book_store/internal/response"
 )
 
 // BooksService is the implementation (adapter) of Client interface

@@ -2,7 +2,7 @@ package postgresdb
 
 import (
 	"book_store/internal/domain"
-	"book_store/internal/error"
+	"book_store/internal/response"
 	"database/sql"
 	"fmt"
 	"log"
@@ -20,12 +20,13 @@ type BookRepositoryPostgreSQL struct {
 	client *sqlx.DB
 }
 
+var books []domain.Book
+var appError err.AppError
+var book domain.Book
+
 func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, *err.AppError) {
-	var books []domain.Book
-	var appError err.AppError
 	sqlRequest := "select * from books_store"
-	err := b.client.Select(&books, sqlRequest)
-	if err != nil {
+	if err := b.client.Select(&books, sqlRequest); err != nil {
 		appError.Message = "Unknown error"
 		appError.Code = http.StatusInternalServerError
 		return nil, &appError
@@ -34,11 +35,8 @@ func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, *err.AppError) {
 }
 
 func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, *err.AppError) {
-	var book domain.Book
-	var appError err.AppError
 	sqlRequest := "select * from books_store where id = $1"
-	err := b.client.Get(&book, sqlRequest, id)
-	if err != nil {
+	if err := b.client.Get(&book, sqlRequest, id); err != nil {
 		if err == sql.ErrNoRows {
 			appError.Message = "ID not found"
 			appError.Code = http.StatusNotFound
