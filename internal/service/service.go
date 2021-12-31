@@ -2,7 +2,7 @@ package service
 
 import (
 	"book_store/internal/domain"
-	"log"
+	err "book_store/internal/error"
 )
 
 // BooksService is the implementation (adapter) of Client interface
@@ -17,21 +17,10 @@ func NewBookService(repository domain.BookRepository) BookService {
 	}
 }
 
-func(b BookService) GetAllBooks() ([]domain.Book, error) {
-	books, err := b.repo.GetBooks()
-		if err != nil {
-			log.Printf("Error while getting books from DB repo: %v", err)
-			return nil, err
-		}
-	
-	return books, nil	
+func(b BookService) GetAllBooks() ([]domain.Book, *err.AppError) {
+	return b.repo.GetBooks()
 }
 
-func(b BookService) GetBookById(id int) (*domain.Book, error) {
-	book, err := b.repo.GetBook(id)
-		if err != nil {
-			log.Printf("Error while getting book by ID from DB repo: %v", err)
-			return nil, err
-		}
-	return book, nil	
+func(b BookService) GetBookById(id int) (*domain.Book, *err.AppError) {
+	return b.repo.GetBook(id)
 }

@@ -2,9 +2,11 @@ package postgresdb
 
 import (
 	"book_store/internal/domain"
+	"book_store/internal/error"
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -18,28 +20,33 @@ type BookRepositoryPostgreSQL struct {
 	client *sqlx.DB
 }
 
-func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, error) {
+func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, *err.AppError) {
 	var books []domain.Book
+	var appError err.AppError
 	sqlRequest := "select * from books_store"
 	err := b.client.Select(&books, sqlRequest)
 	if err != nil {
-		log.Printf("Error while getting DB response: %v", err.Error())
-		return nil, err
+		appError.Message = "Unknown error"
+		appError.Code = http.StatusInternalServerError
+		return nil, &appError
 	}
 	return books, nil
 }
 
-func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, error) {
+func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, *err.AppError) {
 	var book domain.Book
+	var appError err.AppError
 	sqlRequest := "select * from books_store where id = $1"
 	err := b.client.Get(&book, sqlRequest, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("ID not found: %v", err.Error())
-			return nil, err
+			appError.Message = "ID not found"
+			appError.Code = http.StatusNotFound
+			return nil, &appError
 		} else {
-			log.Printf("Error while getting DB response: %v", err.Error())
-			return nil, err
+			appError.Message = "Unknown error"
+			appError.Code = http.StatusInternalServerError
+			return nil, &appError
 		}
 	}
 	return &book, nil
