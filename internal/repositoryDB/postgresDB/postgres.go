@@ -2,6 +2,7 @@ package postgresdb
 
 import (
 	"book_store/internal/domain"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -17,9 +18,8 @@ type BookRepositoryPostgreSQL struct {
 	client *sqlx.DB
 }
 
-var books []domain.Book
-
 func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, error) {
+	var books []domain.Book
 	sqlRequest := "select * from books_store"
 	err := b.client.Select(&books, sqlRequest)
 	if err != nil {
@@ -27,6 +27,22 @@ func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, error) {
 		return nil, err
 	}
 	return books, nil
+}
+
+func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, error) {
+	var book domain.Book
+	sqlRequest := "select * from books_store where id = $1"
+	err := b.client.Get(&book, sqlRequest, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("ID not found: %v", err.Error())
+			return nil, err
+		} else {
+			log.Printf("Error while getting DB response: %v", err.Error())
+			return nil, err
+		}
+	}
+	return &book, nil
 }
 
 // helper function
@@ -47,7 +63,7 @@ func ConnectDB() *sqlx.DB {
 	db_port := os.Getenv("DB_PORT")
 	db_address := os.Getenv("DB_ADDRESS")
 	db_pswd := os.Getenv("DB_PSWD")
-	
+
 	dataSource := fmt.Sprintf("postgres://postgres:%s@%s:%s/%s?sslmode=disable", db_pswd, db_address, db_port, db_name)
 	client, err := sqlx.Open("postgres", dataSource)
 	if err != nil || client == nil {

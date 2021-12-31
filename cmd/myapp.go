@@ -14,13 +14,14 @@ func main() {
 	db := postgresdb.ConnectDB()
 
 	// Wiring
-	bookRepositoryDB := postgresdb.NewBookRepositoryDb(db)
-	bookService := service.NewBookService(bookRepositoryDB)
+	postgresBookRepositoryDB := postgresdb.NewBookRepositoryDb(db)
+	bookService := service.NewBookService(postgresBookRepositoryDB)
 	bh := handler.BookHandler{Service: bookService}
 
-	// Creating router and defining handler
+	// Creating router and defining routes and handlers
 	g := gin.Default()
 	g.GET("/books/", bh.GetAllBook)
+	g.GET("/books/:id/", bh.GetBookbyIdNumber)
 
 	// Running the connection on a defined port
 	if err := g.Run(":8080"); err != nil {
