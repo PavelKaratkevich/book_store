@@ -2,7 +2,7 @@ package postgresdb
 
 import (
 	"book_store/internal/domain"
-	"book_store/internal/response"
+	err "book_store/internal/response"
 	"database/sql"
 	"fmt"
 	"log"
@@ -20,11 +20,11 @@ type BookRepositoryPostgreSQL struct {
 	client *sqlx.DB
 }
 
-var books []domain.Book
 var appError err.AppError
 var book domain.Book
 
 func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, *err.AppError) {
+	var books []domain.Book
 	sqlRequest := "select * from books_store"
 	if err := b.client.Select(&books, sqlRequest); err != nil {
 		appError.Message = "Unknown error"
@@ -48,6 +48,20 @@ func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, *err.AppError) 
 		}
 	}
 	return &book, nil
+}
+
+func (b BookRepositoryPostgreSQL) NewBook(req domain.Book) (int, *err.AppError) {
+	sqlRequest := "INSERT INTO books_store (Title, Authors, Year) VALUES ($1, $2, $3)"
+
+	res, err := b.client.Exec(sqlRequest, req.Title, req.Authors, req.Year)
+	if err != nil {
+		log.Printf("Error while inserting book to DB: %v", err.Error())
+			appError.Message = "Error while making a book record"
+			appError.Code = http.StatusInternalServerError
+			return 0, &appError
+		}
+	rowsAffected, _ := res.RowsAffected()
+	return int(rowsAffected), nil
 }
 
 // helper function

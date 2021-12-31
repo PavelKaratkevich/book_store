@@ -24,3 +24,7 @@ func(b BookService) GetAllBooks() ([]domain.Book, *err.AppError) {
 func(b BookService) GetBookById(id int) (*domain.Book, *err.AppError) {
 	return b.repo.GetBook(id)
 }
+
+func(b BookService) PostNewBook(req domain.Book) (int, *err.AppError) {
+	return b.repo.NewBook(req)
+}
