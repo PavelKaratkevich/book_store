@@ -2,7 +2,6 @@ package service
 
 import (
 	"book_store/internal/domain"
-	"book_store/internal/dto"
 	"log"
 )
 
@@ -18,27 +17,21 @@ func NewBookService(repository domain.BookRepository) BookService {
 	}
 }
 
-func(b BookService) GetAllBooks() ([]dto.Book, error) {
-	var dto []dto.Book
+func(b BookService) GetAllBooks() ([]domain.Book, error) {
 	books, err := b.repo.GetBooks()
 		if err != nil {
 			log.Printf("Error while getting books from DB repo: %v", err)
 			return nil, err
 		}
-	for _, j := range books {
-		dto = append(dto, j.ToDto())
-	}
-	return dto, nil	
+	
+	return books, nil	
 }
 
-func(b BookService) GetBookById(id int) (*dto.Book, error) {
-	var dto dto.Book
+func(b BookService) GetBookById(id int) (*domain.Book, error) {
 	book, err := b.repo.GetBook(id)
 		if err != nil {
 			log.Printf("Error while getting book by ID from DB repo: %v", err)
 			return nil, err
 		}
-		dto = book.ToDto()
-	return &dto, nil	
+	return book, nil	
 }
-

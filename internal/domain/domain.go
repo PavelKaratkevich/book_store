@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"book_store/internal/dto"
-
 	"github.com/lib/pq"
 )
 
@@ -16,22 +14,12 @@ type Book struct {
 
 // Primary Port for the Service implementation
 type Service interface {
-	GetAllBooks() ([]dto.Book, error)
-	GetBookById(id int) (*dto.Book, error)
+	GetAllBooks() ([]Book, error)
+	GetBookById(id int) (*Book, error)
 }
 
 // Secondary Port for the database implementation
 type BookRepository interface {
 	GetBooks() ([]Book, error)
 	GetBook(id int) (*Book, error)
-}
-
-// ToDto is func that moves data to a DTO
-func (b Book) ToDto() dto.Book {
-	return dto.Book{
-		ID: b.ID,
-		Title: b.Title,
-		Authors: b.Authors,
-		Year: b.Year,
-	}
 }
