@@ -14,7 +14,7 @@ type Book struct {
 	Year    string         `json:"Year" db:"year" binding:"required"`
 }
 
-// Primary Port for the Service implementation
+// Primary Port for the Service/Use Case implementation
 type Service interface {
 	GetAllBooks() ([]Book, *err.AppError)
 	GetBookById(id int) (*Book, *err.AppError)

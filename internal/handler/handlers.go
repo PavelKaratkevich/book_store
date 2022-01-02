@@ -9,11 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CustomerHandler incorporates service struct
+// CustomerHandler incorporates service adapter (struct)
 type BookHandler struct {
 	Service service.BookService
 }
 
+// GetAllBook sends JSON with all books listed in the database
 func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 	res, err := bh.Service.GetAllBooks()
 	if err != nil {
@@ -23,6 +24,7 @@ func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetBookbyIdNumber returns JSON with a particular book depending on its ID
 func (bh BookHandler) GetBookbyIdNumber(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	res, err := bh.Service.GetBookById(id)
@@ -33,6 +35,7 @@ func (bh BookHandler) GetBookbyIdNumber(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UploadNewBook requires JSON fields (Title, Authors, Year) to be filled in, and sends back the number of books added 
 func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 	var newBook domain.Book
 	// Validating if all the fields are filled in
@@ -48,11 +51,12 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// DeleteBookByItsIdNumber takes ID of a book from URL and sends back JSON with error or success
 func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	rowsDeleted, err := bh.Service.DeleteBookById(id)
 	if err != nil {
-		ctx.JSON(err.Code, "Server error")
+		ctx.JSON(err.Code, err.Message)
 		return
 	}
 	switch rowsDeleted {
@@ -63,13 +67,16 @@ func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 	}
 }
 
+/* UpdateBookByItsId takes ID of the book from URL, and takes Title, Authors, Year fields from request body,
+and sends back status code and status message */
 func (bh BookHandler) UpdateBookByItsId(ctx *gin.Context) {
-	var updateBookRequest domain.Book
 	// Retrieving ID from URL
 	id, _ := strconv.Atoi(ctx.Param("id"))
-
-	updateBookRequest.ID = id
-	// Validation if all the fields were filled in
+	
+	// Creating object which will be used for decoding fields of JSON request body (Title, Authors, Year)
+	updateBookRequest := domain.Book{ID: id,}
+	
+	// Validating if all the fields were filled in
 	if err := ctx.ShouldBindJSON(&updateBookRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, "All fields should be filled in")
 		return
