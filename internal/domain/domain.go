@@ -26,4 +26,5 @@ type BookRepository interface {
 	GetBooks() ([]Book, *err.AppError)
 	GetBook(id int) (*Book, *err.AppError)
 	NewBook(req Book) (int, *err.AppError)
+	DeleteBook(id int) (int, *err.AppError)
 }

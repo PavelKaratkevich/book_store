@@ -22,5 +22,6 @@ func StartApp() *gin.Engine {
 	g.GET("/books/", bh.GetAllBook)
 	g.GET("/books/:id/", bh.GetBookbyIdNumber)
 	g.POST("/books/", bh.UploadNewBook)
+	g.DELETE("/books/:id", bh.DeleteBookByItsIdNumber)
 	return g
 }
