@@ -32,3 +32,7 @@ func(b BookService) PostNewBook(req domain.Book) (int, *err.AppError) {
 func(b BookService) DeleteBookById(id int) (int, *err.AppError) {
 	return b.repo.DeleteBook(id)
 }
+
+func(b BookService) UpdateBookById(req domain.Book) (int, *err.AppError) {
+	return b.repo.UpdateBook(req)
+}

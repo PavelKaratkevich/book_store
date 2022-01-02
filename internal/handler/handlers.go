@@ -52,7 +52,7 @@ func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	rowsDeleted, err := bh.Service.DeleteBookById(id)
 	if err != nil {
-		ctx.JSON(err.Code, "Server error.")
+		ctx.JSON(err.Code, "Server error")
 		return
 	}
 	switch rowsDeleted {
@@ -60,5 +60,30 @@ func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, "ID not found")
 	case 1:
 		ctx.JSON(http.StatusOK, "Book has been deleted successfully")
+	}
+}
+
+func (bh BookHandler) UpdateBookByItsId(ctx *gin.Context) {
+	var updateBookRequest domain.Book
+	// Retrieving ID from URL
+	id, _ := strconv.Atoi(ctx.Param("id"))
+
+	updateBookRequest.ID = id
+	// Validation if all the fields were filled in
+	if err := ctx.ShouldBindJSON(&updateBookRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, "All fields should be filled in")
+		return
+	}
+	// Invoking service function
+	res, err := bh.Service.UpdateBookById(updateBookRequest)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, "Internal error")
+	}
+	// Switching over RowsAffected: if 1 - status 200, if 0 - status 404
+	switch res {
+	case 0:
+		ctx.JSON(http.StatusNotFound, "ID not found")
+	case 1:
+		ctx.JSON(http.StatusOK, "Book has been updated successfully")
 	}
 }

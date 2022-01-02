@@ -78,6 +78,18 @@ func (b BookRepositoryPostgreSQL) DeleteBook(id int) (int, *err.AppError) {
 	return int(rowsDeleted), nil
 }
 
+func (b BookRepositoryPostgreSQL) UpdateBook(req domain.Book) (int, *err.AppError) {
+	result, err := b.client.Exec("UPDATE books_store SET Title=$1, Authors=$2, Year=$3 where id=$4 RETURNING id", req.Title, req.Authors, req.Year, req.ID)
+	if err != nil {
+		log.Printf("Error while updating book from DB: %v", err.Error())
+			appError.Message = fmt.Sprintf("Error while updating book with %v from DB", req.ID)
+			appError.Code = http.StatusInternalServerError
+			return 0, &appError
+		}
+	rowsUpdated, _ := result.RowsAffected()
+	return int(rowsUpdated), nil
+}
+
 // helper function
 func NewBookRepositoryDb(client *sqlx.DB) BookRepositoryPostgreSQL {
 	return BookRepositoryPostgreSQL{

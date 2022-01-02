@@ -19,6 +19,8 @@ type Service interface {
 	GetAllBooks() ([]Book, *err.AppError)
 	GetBookById(id int) (*Book, *err.AppError)
 	PostNewBook(req Book) (int, *err.AppError)
+	DeleteBookById(id int) (int, *err.AppError)
+	UpdateBookById(req Book) (int, *err.AppError)
 }
 
 // Secondary Port for the database implementation
@@ -27,4 +29,5 @@ type BookRepository interface {
 	GetBook(id int) (*Book, *err.AppError)
 	NewBook(req Book) (int, *err.AppError)
 	DeleteBook(id int) (int, *err.AppError)
+	UpdateBook(req Book) (int, *err.AppError)
 }
