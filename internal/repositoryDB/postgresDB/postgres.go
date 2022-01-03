@@ -25,17 +25,21 @@ var book domain.Book
 
 func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, *err.AppError) {
 	var books []domain.Book
+
 	sqlRequest := "select * from books_store"
 	if err := b.client.Select(&books, sqlRequest); err != nil {
 		appError.Message = "Unknown error"
 		appError.Code = http.StatusInternalServerError
 		return nil, &appError
 	}
+
 	return books, nil
 }
 
 func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, *err.AppError) {
+
 	sqlRequest := "select * from books_store where id = $1"
+
 	if err := b.client.Get(&book, sqlRequest, id); err != nil {
 		if err == sql.ErrNoRows {
 			appError.Message = "ID not found"
@@ -47,46 +51,57 @@ func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, *err.AppError) 
 			return nil, &appError
 		}
 	}
+
 	return &book, nil
 }
 
 func (b BookRepositoryPostgreSQL) NewBook(req domain.Book) (int, *err.AppError) {
+
 	sqlRequest := "INSERT INTO books_store (Title, Authors, Year) VALUES ($1, $2, $3)"
 
 	res, err := b.client.Exec(sqlRequest, req.Title, req.Authors, req.Year)
 	if err != nil {
 		log.Printf("Error while inserting book to DB: %v", err.Error())
-			appError.Message = "Error while making a book record"
-			appError.Code = http.StatusInternalServerError
-			return 0, &appError
-		}
-	rowsAffected, _ := res.RowsAffected()
-	return int(rowsAffected), nil
+		appError.Message = "Error while making a book record"
+		appError.Code = http.StatusInternalServerError
+		return 0, &appError
+	}
+
+	rowsAdded, _ := res.RowsAffected()
+
+	return int(rowsAdded), nil
 }
 
 func (b BookRepositoryPostgreSQL) DeleteBook(id int) (int, *err.AppError) {
+
 	sqlRequest := "DELETE FROM books_store where id = $1"
 
 	res, err := b.client.Exec(sqlRequest, id)
 	if err != nil {
 		log.Printf("Error while deleting book from DB: %v", err.Error())
-			appError.Message = fmt.Sprintf("Error while deleting book with %v from DB", id)
-			appError.Code = http.StatusInternalServerError
-			return 0, &appError
-		}
+		appError.Message = fmt.Sprintf("Error while deleting book with %v from DB", id)
+		appError.Code = http.StatusInternalServerError
+		return 0, &appError
+	}
+
 	rowsDeleted, _ := res.RowsAffected()
+
 	return int(rowsDeleted), nil
 }
 
 func (b BookRepositoryPostgreSQL) UpdateBook(req domain.Book) (int, *err.AppError) {
+
 	result, err := b.client.Exec("UPDATE books_store SET Title=$1, Authors=$2, Year=$3 where id=$4 RETURNING id", req.Title, req.Authors, req.Year, req.ID)
+
 	if err != nil {
 		log.Printf("Error while updating book from DB: %v", err.Error())
-			appError.Message = fmt.Sprintf("Error while updating book with %v from DB", req.ID)
-			appError.Code = http.StatusInternalServerError
-			return 0, &appError
-		}
+		appError.Message = fmt.Sprintf("Error while updating book with %v from DB", req.ID)
+		appError.Code = http.StatusInternalServerError
+		return 0, &appError
+	}
+
 	rowsUpdated, _ := result.RowsAffected()
+
 	return int(rowsUpdated), nil
 }
 
