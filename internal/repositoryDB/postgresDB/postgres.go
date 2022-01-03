@@ -124,6 +124,9 @@ func ConnectDB() *sqlx.DB {
 	db_address := os.Getenv("DB_ADDRESS")
 	db_pswd := os.Getenv("DB_PSWD")
 
+	// checkEnvVars verifies if all env variables have been set
+	checkEnvVars("DB_NAME", "DB_PORT", "DB_ADDRESS", "DB_PSWD")
+
 	dataSource := fmt.Sprintf("postgres://postgres:%s@%s:%s/%s?sslmode=disable", db_pswd, db_address, db_port, db_name)
 	client, err := sqlx.Open("postgres", dataSource)
 	if err != nil || client == nil {
@@ -133,4 +136,12 @@ func ConnectDB() *sqlx.DB {
 	client.SetMaxOpenConns(10)
 	client.SetMaxIdleConns(10)
 	return client
+}
+
+func checkEnvVars(s ...string) {
+	for _, j := range s {
+		if _, boolean := os.LookupEnv(j); !boolean {
+			log.Panicf("Env variable %v is not set", j)
+		}
+	}
 }
