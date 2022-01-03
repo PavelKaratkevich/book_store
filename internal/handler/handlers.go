@@ -19,7 +19,7 @@ func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
 	res, err := bh.Service.GetAllBooks()
 	if err != nil {
-		ctx.JSON(err.Code, err.Message)
+		ctx.JSON(err.Code, gin.H{"error": err.Message})
 		return
 	}
 
@@ -33,7 +33,7 @@ func (bh BookHandler) GetBookbyIdNumber(ctx *gin.Context) {
 
 	res, err := bh.Service.GetBookById(id)
 	if err != nil {
-		ctx.JSON(err.Code, err.Message)
+		ctx.JSON(err.Code, gin.H{"error": err.Message})
 		return
 	}
 
@@ -47,13 +47,13 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 	
 	// Validating if all the fields are filled in
 	if err := ctx.ShouldBindJSON(&newBook); err != nil {
-		ctx.JSON(http.StatusBadRequest, "All fields should be filled in")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "All fields should be filled in"} )
 		return
 	}
 	
 	res, err := bh.Service.PostNewBook(newBook)
 	if err != nil {
-		ctx.JSON(err.Code, err.Message)
+		ctx.JSON(err.Code, gin.H{"error": err.Message})
 		return
 	}
 	
@@ -67,15 +67,15 @@ func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 	
 	rowsDeleted, err := bh.Service.DeleteBookById(id)
 	if err != nil {
-		ctx.JSON(err.Code, err.Message)
+		ctx.JSON(err.Code, gin.H{"error": gin.H{"error":err.Message}})
 		return
 	}
 	
 	switch rowsDeleted {
 	case 0:
-		ctx.JSON(http.StatusNotFound, "ID not found")
+		ctx.JSON(http.StatusNotFound, gin.H{"error":"ID not found"})
 	case 1:
-		ctx.JSON(http.StatusOK, "Book has been deleted successfully")
+		ctx.JSON(http.StatusOK, gin.H{"error":"Book has been deleted successfully"})
 	}
 }
 
@@ -90,24 +90,19 @@ func (bh BookHandler) UpdateBookByItsId(ctx *gin.Context) {
 	
 	// Validating if all the fields were filled in
 	if err := ctx.ShouldBindJSON(&updateBookRequest); err != nil {
-		ctx.JSON(http.StatusBadRequest, "All fields should be filled in")
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "All fields should be filled in"} )
 		return
 	}
 	// Invoking service function
 	res, err := bh.Service.UpdateBookById(updateBookRequest)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, "Internal error")
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error":"Internal error"})
 	}
 	// Switching over RowsAffected: if 1 - status 200, if 0 - status 404
 	switch res {
 	case 0:
-		ctx.JSON(http.StatusNotFound, "ID not found")
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "ID not found"})
 	case 1:
-		ctx.JSON(http.StatusOK, "Book has been updated successfully")
+		ctx.JSON(http.StatusOK, gin.H{"error":"Book has been updated successfully"})
 	}
 }
-
-// func enableCors(w *gin.ResponseWriter) {
-// 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-// 	}
-
