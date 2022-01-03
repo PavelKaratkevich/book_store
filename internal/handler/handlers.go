@@ -106,3 +106,8 @@ func (bh BookHandler) UpdateBookByItsId(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, "Book has been updated successfully")
 	}
 }
+
+// func enableCors(w *gin.ResponseWriter) {
+// 	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+// 	}
+
