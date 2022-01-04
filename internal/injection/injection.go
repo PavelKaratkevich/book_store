@@ -20,10 +20,11 @@ func StartApp() *gin.Engine {
 	bh := handler.BookHandler{Service: bookService}
 
 	// Creating router and defining routes and handlers
-	g := gin.New()
+	g := gin.Default()
 
-	// Enabling CORS middleware
+	// Enabling middleware
 	g.Use(middleware.CORS())
+	g.Use(middleware.Logger())
 
 	// Declaring routes and handlers
 	clientRoutes := g.Group("/books")

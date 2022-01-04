@@ -10,7 +10,7 @@ func main() {
 	router := injection.StartApp()
 	
 	// Running the connection on a defined port
-	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(); err != nil {
 		log.Fatalf("Failed to run server: %v", err)
 	}
 }
