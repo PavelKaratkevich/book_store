@@ -27,7 +27,7 @@ func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 }
 
 // GetBookbyIdNumber returns JSON with a particular book depending on its ID
-func (bh BookHandler) GetBookbyIdNumber(ctx *gin.Context) {
+func (bh BookHandler) GetBookbyId(ctx *gin.Context) {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
 
@@ -61,7 +61,7 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 }
 
 // DeleteBookByItsIdNumber takes ID of a book from URL and sends back JSON with error or success
-func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
+func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	
@@ -81,7 +81,7 @@ func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 
 /* UpdateBookByItsId takes ID of the book from URL, and takes Title, Authors, Year fields from request body,
 and sends back status code and status message */
-func (bh BookHandler) UpdateBookByItsId(ctx *gin.Context) {
+func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	// Retrieving ID from URL
 	id, _ := strconv.Atoi(ctx.Param("id"))
 	

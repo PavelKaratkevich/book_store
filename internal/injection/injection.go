@@ -30,10 +30,10 @@ func StartApp() *gin.Engine {
 	clientRoutes := g.Group("/books")
 	{
 		clientRoutes.GET("/", bh.GetAllBook)
-		clientRoutes.GET("/:id/", bh.GetBookbyIdNumber)
+		clientRoutes.GET("/:id/", bh.GetBookbyId)
 		clientRoutes.POST("/", bh.UploadNewBook)
-		clientRoutes.DELETE("/:id", bh.DeleteBookByItsIdNumber)
-		clientRoutes.PUT("/:id", bh.UpdateBookByItsId)
+		clientRoutes.DELETE("/:id", bh.DeleteBook)
+		clientRoutes.PUT("/:id", bh.UpdateBook)
 	}
 
 	return g
