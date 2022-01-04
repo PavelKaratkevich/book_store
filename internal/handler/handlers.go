@@ -75,7 +75,7 @@ func (bh BookHandler) DeleteBookByItsIdNumber(ctx *gin.Context) {
 	case 0:
 		ctx.JSON(http.StatusNotFound, gin.H{"error":"ID not found"})
 	case 1:
-		ctx.JSON(http.StatusOK, gin.H{"error":"Book has been deleted successfully"})
+		ctx.JSON(http.StatusOK, gin.H{"Message":"Book has been deleted successfully"})
 	}
 }
 
@@ -103,6 +103,6 @@ func (bh BookHandler) UpdateBookByItsId(ctx *gin.Context) {
 	case 0:
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "ID not found"})
 	case 1:
-		ctx.JSON(http.StatusOK, gin.H{"error":"Book has been updated successfully"})
+		ctx.JSON(http.StatusOK, gin.H{"Message":"Book has been updated successfully"})
 	}
 }
