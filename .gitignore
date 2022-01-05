@@ -10,5 +10,4 @@ vendor/
 go.work
 .idea
 postgres-data/
-*.yml
 Dockerfile

@@ -3,6 +3,8 @@ package handler
 import (
 	"book_store/internal/domain"
 	"book_store/internal/service"
+	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -19,7 +21,7 @@ func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
 	res, err := bh.Service.GetAllBooks()
 	if err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
 		return
 	}
 
@@ -37,8 +39,13 @@ func (bh BookHandler) GetBookbyId(ctx *gin.Context) {
 
 	res, err2 := bh.Service.GetBookById(id)
 	if err2 != nil {
-		ctx.JSON(err2.Code, gin.H{"error": err2.Message})
-		return
+		if *err2 == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "ID not found"})
+			return
+		} else {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "Unknown error"})
+			return
+		}
 	}
 
 	ctx.JSON(http.StatusOK, res)
@@ -57,7 +64,7 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 
 	res, err := bh.Service.PostNewBook(newBook)
 	if err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while making a book record"})
 		return
 	}
 
@@ -67,11 +74,15 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 // DeleteBookByItsIdNumber takes ID of a book from URL and sends back JSON with error or success
 func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 
-	id, _ := strconv.Atoi(ctx.Param("id"))
+	id, err1 := strconv.Atoi(ctx.Param("id"))
+	if err1 != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
+		return
+	}
 
 	rowsDeleted, err := bh.Service.DeleteBookById(id)
 	if err != nil {
-		ctx.JSON(err.Code, gin.H{"error": gin.H{"error": err.Message}})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": gin.H{"error": fmt.Sprintf("Error while deleting book with %v from DB", id)}})
 		return
 	}
 
@@ -87,8 +98,11 @@ func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 and sends back status code and status message */
 func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	// Retrieving ID from URL
-	id, _ := strconv.Atoi(ctx.Param("id"))
-
+	id, err1 := strconv.Atoi(ctx.Param("id"))
+	if err1 != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
+		return
+	}
 	// Creating object which will be used for decoding fields of JSON request body (Title, Authors, Year)
 	updateBookRequest := domain.Book{ID: id}
 

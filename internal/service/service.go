@@ -2,7 +2,7 @@ package service
 
 import (
 	"book_store/internal/domain"
-	err "book_store/internal/response"
+	// err "book_store/internal/response"
 )
 
 // BooksService is the implementation (adapter) of Client interface
@@ -17,22 +17,22 @@ func NewBookService(repository domain.BookRepository) BookService {
 	}
 }
 
-func(b BookService) GetAllBooks() ([]domain.Book, *err.AppError) {
+func(b BookService) GetAllBooks() ([]domain.Book, *error) {
 	return b.repo.GetBooks()
 }
 
-func(b BookService) GetBookById(id int) (*domain.Book, *err.AppError) {
+func(b BookService) GetBookById(id int) (*domain.Book, *error) {
 	return b.repo.GetBook(id)
 }
 
-func(b BookService) PostNewBook(req domain.Book) (int, *err.AppError) {
+func(b BookService) PostNewBook(req domain.Book) (int, *error) {
 	return b.repo.NewBook(req)
 }
 
-func(b BookService) DeleteBookById(id int) (int, *err.AppError) {
+func(b BookService) DeleteBookById(id int) (int, *error) {
 	return b.repo.DeleteBook(id)
 }
 
-func(b BookService) UpdateBookById(req domain.Book) (int, *err.AppError) {
+func(b BookService) UpdateBookById(req domain.Book) (int, *error) {
 	return b.repo.UpdateBook(req)
 }

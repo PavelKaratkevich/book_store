@@ -1,7 +1,7 @@
 package domain
 
 import (
-	err "book_store/internal/response"
+	// err "book_store/internal/response"
 
 	"github.com/lib/pq"
 )
@@ -16,18 +16,18 @@ type Book struct {
 
 // Primary Port for the Service/Use Case implementation
 type Service interface {
-	GetAllBooks() ([]Book, *err.AppError)
-	GetBookById(id int) (*Book, *err.AppError)
-	PostNewBook(req Book) (int, *err.AppError)
-	DeleteBookById(id int) (int, *err.AppError)
-	UpdateBookById(req Book) (int, *err.AppError)
+	GetAllBooks() ([]Book, *error)
+	GetBookById(id int) (*Book, *error)
+	PostNewBook(req Book) (int, *error)
+	DeleteBookById(id int) (int, *error)
+	UpdateBookById(req Book) (int, *error)
 }
 
 // Secondary Port for the database implementation
 type BookRepository interface {
-	GetBooks() ([]Book, *err.AppError)
-	GetBook(id int) (*Book, *err.AppError)
-	NewBook(req Book) (int, *err.AppError)
-	DeleteBook(id int) (int, *err.AppError)
-	UpdateBook(req Book) (int, *err.AppError)
+	GetBooks() ([]Book, *error)
+	GetBook(id int) (*Book, *error)
+	NewBook(req Book) (int, *error)
+	DeleteBook(id int) (int, *error)
+	UpdateBook(req Book) (int, *error)
 }
