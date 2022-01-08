@@ -1,8 +1,9 @@
 package middleware
 
 import (
-	
 	"log"
+	"net/http"
+	"book_store/internal/middleware/jwt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,3 +29,23 @@ func Logger() gin.HandlerFunc {
 	}
 }
 
+// CheckToken verifies if the token is provided, verified and valid
+func CheckToken() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if token := jwtAuth.ExtractToken(c.Request); token == "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Please provide a valid token"})
+			return
+		}
+
+		if _, err := jwtAuth.VerifyToken(c.Request); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Token not verified"})
+			return
+		}
+
+		if err := jwtAuth.TokenValid(c.Request); err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Token not valid"})
+			return
+		}
+	}
+}

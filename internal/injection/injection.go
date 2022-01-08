@@ -26,10 +26,14 @@ func StartApp() *gin.Engine {
 	// Enabling middleware
 	g.Use(middleware.CORS())
 	g.Use(middleware.Logger())
-	g.POST("/login", jwtAuth.Login()) // JWT authentication
 
-	// Declaring routes and handlers
-	routes := g.Group("/books")
+	// Providing endoint for JWT authentication
+	g.POST("/login", jwtAuth.Login())
+	
+	/* Declaring routes and handlers and enabling jwtAuth middleware 
+	(checking if token is provided, verified and valid for all incoming requests)
+	*/
+	routes := g.Group("/books", middleware.CheckToken())
 	{
 		routes.GET("/", bh.GetAllBook)
 		routes.GET("/:id/", bh.GetBookbyId)

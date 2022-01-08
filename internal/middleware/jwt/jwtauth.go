@@ -1,8 +1,6 @@
 package jwtAuth
 
 import (
-	// "errors"
-	err "book_store/internal/response"
 	"fmt"
 	"net/http"
 	"os"
@@ -15,7 +13,6 @@ import (
 )
 
 type User struct {
-	// ID uint64            `json:"id"`
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
@@ -70,7 +67,7 @@ func CreateToken() (*TokenDetails, error) {
 
 	var err error
 	//Creating Access Token
-	os.Getenv("ACCESS_SECRET") //this should be in an env file
+	os.Getenv("ACCESS_SECRET") 
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
 	atClaims["access_uuid"] = td.AccessUuid
@@ -82,10 +79,9 @@ func CreateToken() (*TokenDetails, error) {
 		return nil, err
 	}
 	//Creating Refresh Token
-	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf") //this should be in an env file
+	os.Getenv("REFRESH_SECRET")
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refresh_uuid"] = td.RefreshUuid
-	// rtClaims["user_id"] = userid
 	rtClaims["exp"] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
@@ -127,30 +123,6 @@ func TokenValid(r *http.Request) error {
 	}
 	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
 		return err
-	}
-	return nil
-}
-
-// CheckToken verifies if the token is provided, if it is verified and if it is valid 
-func CheckToken(c *gin.Context) *err.AppError {
-	var appErr err.AppError
-
-	if token := ExtractToken(c.Request); token == "" {
-		appErr.Code = http.StatusBadRequest
-		appErr.Message = "Please provide a valid token"
-		return &appErr
-	}
-
-	if _, err := VerifyToken(c.Request); err != nil {
-		appErr.Code = http.StatusForbidden
-		appErr.Message = "Unauthorized"
-		return &appErr
-	}
-
-	if err := TokenValid(c.Request); err != nil {
-		appErr.Code = http.StatusForbidden
-		appErr.Message = "Unauthorized"
-		return &appErr
 	}
 	return nil
 }

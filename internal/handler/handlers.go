@@ -2,7 +2,6 @@ package handler
 
 import (
 	"book_store/internal/domain"
-	jwtAuth "book_store/internal/middleware/jwt"
 	"book_store/internal/service"
 	"database/sql"
 	"fmt"
@@ -20,12 +19,6 @@ type BookHandler struct {
 // GetAllBook sends JSON with all books listed in the database
 func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
-	if err := jwtAuth.CheckToken(ctx); err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
-		ctx.Abort()
-		return
-	}
-
 	res, err := bh.Service.GetAllBooks()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
@@ -37,12 +30,6 @@ func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
 // GetBookbyIdNumber returns JSON with a particular book depending on its ID
 func (bh BookHandler) GetBookbyId(ctx *gin.Context) {
-
-	if err := jwtAuth.CheckToken(ctx); err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
-		ctx.Abort()
-		return
-	}
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -69,12 +56,6 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 
 	var newBook domain.Book
 
-	if err := jwtAuth.CheckToken(ctx); err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
-		ctx.Abort()
-		return
-	}
-
 	// Validating if all the fields are filled in
 	if err := ctx.ShouldBindJSON(&newBook); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "All fields should be filled in"})
@@ -92,12 +73,6 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 
 // DeleteBookByItsIdNumber takes ID of a book from URL and sends back JSON with error or success
 func (bh BookHandler) DeleteBook(ctx *gin.Context) {
-
-	if err := jwtAuth.CheckToken(ctx); err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
-		ctx.Abort()
-		return
-	}
 
 	id, err1 := strconv.Atoi(ctx.Param("id"))
 	if err1 != nil {
@@ -122,12 +97,6 @@ func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 /* UpdateBookByItsId takes ID of the book from URL, and takes Title, Authors, Year fields from request body,
 and sends back status code and status message */
 func (bh BookHandler) UpdateBook(ctx *gin.Context) {
-
-	if err := jwtAuth.CheckToken(ctx); err != nil {
-		ctx.JSON(err.Code, gin.H{"error": err.Message})
-		ctx.Abort()
-		return
-	}
 
 	// Retrieving ID from URL
 	id, err1 := strconv.Atoi(ctx.Param("id"))
