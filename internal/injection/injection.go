@@ -3,6 +3,7 @@ package injection
 import (
 	"book_store/internal/handler"
 	"book_store/internal/middleware"
+	jwtAuth "book_store/internal/middleware/jwt"
 	postgresdb "book_store/internal/repositoryDB/postgresDB"
 	"book_store/internal/service"
 
@@ -25,15 +26,16 @@ func StartApp() *gin.Engine {
 	// Enabling middleware
 	g.Use(middleware.CORS())
 	g.Use(middleware.Logger())
+	g.POST("/login", jwtAuth.Login()) // JWT authentication
 
 	// Declaring routes and handlers
-	clientRoutes := g.Group("/books")
+	routes := g.Group("/books")
 	{
-		clientRoutes.GET("/", bh.GetAllBook)
-		clientRoutes.GET("/:id/", bh.GetBookbyId)
-		clientRoutes.POST("/", bh.UploadNewBook)
-		clientRoutes.DELETE("/:id", bh.DeleteBook)
-		clientRoutes.PUT("/:id", bh.UpdateBook)
+		routes.GET("/", bh.GetAllBook)
+		routes.GET("/:id/", bh.GetBookbyId)
+		routes.POST("/", bh.UploadNewBook)
+		routes.DELETE("/:id", bh.DeleteBook)
+		routes.PUT("/:id", bh.UpdateBook)
 	}
 
 	return g

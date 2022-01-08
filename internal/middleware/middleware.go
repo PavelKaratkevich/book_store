@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -24,4 +25,6 @@ func CORS() gin.HandlerFunc {
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Printf("Host: %v, Request method received: %s, Request path: %s", c.Request.Host, c.Request.Method, c.Request.URL.Path)
-}}
+	}
+}
+

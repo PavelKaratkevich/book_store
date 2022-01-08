@@ -2,10 +2,12 @@
 
 FROM golang:alpine AS builder
 
-WORKDIR /go/src/app
+WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
+COPY go.mod /app/
+COPY go.sum /app/
+COPY .env /app/
+
 RUN go mod download
 
 COPY . ./
@@ -14,8 +16,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/myapp.go
 
 FROM alpine
 WORKDIR /app
-COPY --from=builder /go/src/app/ /app/
+COPY --from=builder /app/ /app/
+
+EXPOSE 8080
+EXPOSE 5432
 
 CMD ["./app"]
-
-# docker run -dp 8080:8080 book_store
