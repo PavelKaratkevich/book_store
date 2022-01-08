@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// StartApp function creates and returns a gin router
 func StartApp() *gin.Engine {
 
 	// Create DB client for PostgreSQL
@@ -27,7 +28,7 @@ func StartApp() *gin.Engine {
 	g.Use(middleware.CORS())
 	g.Use(middleware.Logger())
 
-	// Providing endoint for JWT authentication
+	// Providing endpoint for JWT authentication
 	g.POST("/login", jwtAuth.Login())
 	
 	/* Declaring routes and handlers and enabling jwtAuth middleware 

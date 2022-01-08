@@ -9,7 +9,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/twinj/uuid"
 )
 
 type User struct {
@@ -17,6 +16,7 @@ type User struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Mock user with pre-defined login and password
 var user = User{
 	Username: "username",
 	Password: "password",
@@ -25,13 +25,12 @@ var user = User{
 type TokenDetails struct {
 	AccessToken  string
 	RefreshToken string
-	AccessUuid   string
-	RefreshUuid  string
 	AtExpires    int64
 	RtExpires    int64
 }
 
 func Login() gin.HandlerFunc {
+	// using mock user
 	var u User
 	return func(c *gin.Context) {
 
@@ -59,30 +58,28 @@ func Login() gin.HandlerFunc {
 
 func CreateToken() (*TokenDetails, error) {
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.AccessUuid = uuid.NewV4().String()
 
+	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
-	td.RefreshUuid = uuid.NewV4().String()
 
 	var err error
 	//Creating Access Token
-	os.Getenv("ACCESS_SECRET") 
+	os.Getenv("ACCESS_SECRET")
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
-	atClaims["access_uuid"] = td.AccessUuid
-	// atClaims["user_id"] = userid
 	atClaims["exp"] = td.AtExpires
+
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
 	if err != nil {
 		return nil, err
 	}
+
 	//Creating Refresh Token
 	os.Getenv("REFRESH_SECRET")
 	rtClaims := jwt.MapClaims{}
-	rtClaims["refresh_uuid"] = td.RefreshUuid
 	rtClaims["exp"] = td.RtExpires
+
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
 	if err != nil {
@@ -104,7 +101,6 @@ func ExtractToken(r *http.Request) string {
 func VerifyToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ExtractToken(r)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		//Make sure that the token method conform to "SigningMethodHMAC"
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
