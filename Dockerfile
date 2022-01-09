@@ -6,7 +6,6 @@ WORKDIR /app
 
 COPY go.mod /app/
 COPY go.sum /app/
-COPY .env /app/
 
 RUN go mod download
 
@@ -19,6 +18,5 @@ WORKDIR /app
 COPY --from=builder /app/ /app/
 
 EXPOSE 8080
-EXPOSE 5432
 
 CMD ["./app"]

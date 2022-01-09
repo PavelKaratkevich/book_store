@@ -3,22 +3,20 @@ version: '3.9'
 services:
     book_store:
       build: ./
-      #---------------------------------------------------------------------------
       ports:
         - 8080:8080
       depends_on:
         - db
     db:
-      image: postgres:latest
+      image: 'postgres:latest'
       restart: always
       ports:
         - 5432:5432
-      environment:
-        POSTGRES_PASSWORD: 'postgres'
+      env_file:
+        - .env  
       volumes:
-        - database_data:/var/lib/postgresql/data
-        - ./internal/repositoryDB/postgresDB/instructions.sql:/docker-entrypoint-initdb.d/instructions.sql
-
+      - ./db-data/:/var/lib/postgresql/data/
+      
 volumes:
-  database_data:
+  db:
     driver: local

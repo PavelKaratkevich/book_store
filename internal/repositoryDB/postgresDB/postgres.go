@@ -94,15 +94,16 @@ func ConnectDB() *sqlx.DB {
 		log.Fatalf("Error loading .env file")
 	}
 	// get environment variables
-	db_name := os.Getenv("DB_NAME")
-	db_port := os.Getenv("DB_PORT")
+	db_user := os.Getenv("POSTGRES_USER")
+	db_pswd := os.Getenv("POSTGRES_PASSWORD")
 	db_address := os.Getenv("DB_ADDRESS")
-	db_pswd := os.Getenv("DB_PSWD")
+	db_port := os.Getenv("DB_PORT")
+	db_name := os.Getenv("POSTGRES_DB")
 
 	// checkEnvVars verifies if all env variables have been set
-	checkEnvVars("DB_NAME", "DB_PORT", "DB_ADDRESS", "DB_PSWD")
+	checkEnvVars("POSTGRES_USER", "POSTGRES_PASSWORD", "DB_ADDRESS", "DB_PORT", "POSTGRES_DB")
 
-	dataSource := fmt.Sprintf("postgres://postgres:%s@%s:%s/%s?sslmode=disable", db_pswd, db_address, db_port, db_name)	
+	dataSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", db_user, db_pswd, db_address, db_port, db_name)	
 	client, err := sqlx.Open("postgres", dataSource)
 	if err != nil || client == nil {
 		log.Fatal("Error while opening DB: ", err)

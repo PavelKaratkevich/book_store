@@ -8,6 +8,7 @@ import (
 	"book_store/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 )
 
 // StartApp function creates and returns a gin router
@@ -23,6 +24,9 @@ func StartApp() *gin.Engine {
 
 	// Creating router and defining routes and handlers
 	g := gin.Default()
+
+	// Enable Prometheus metrics for the gin router
+	DoPrometheusMetrics(g)
 
 	// Enabling middleware
 	g.Use(middleware.CORS())
@@ -44,4 +48,19 @@ func StartApp() *gin.Engine {
 	}
 
 	return g
+}
+
+func DoPrometheusMetrics(router *gin.Engine) {
+	m := ginmetrics.GetMonitor()
+
+	// +optional set metric path, default /debug/metrics
+	m.SetMetricPath("/metrics")
+	// +optional set slow time, default 5s
+	m.SetSlowTime(10)
+	// +optional set request duration, default {0.1, 0.3, 1.2, 5, 10}
+	// used to p95, p99
+	m.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
+
+	// set middleware for gin
+	m.Use(router)
 }
