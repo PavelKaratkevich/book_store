@@ -15,7 +15,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o app ./cmd/myapp.go
 
 FROM alpine
 WORKDIR /app
-COPY --from=builder /app/ /app/
+COPY --from=builder /app/app .
+COPY --from=builder /app/.env .
+COPY --from=builder /app/internal/repositoryDB/postgresDB/instructions.sql .
 
 EXPOSE 8080
 

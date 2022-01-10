@@ -2,7 +2,7 @@ package postgresdb
 
 import (
 	"book_store/internal/domain"
-	// err "book_store/internal/response"
+	"io/ioutil"
 	"fmt"
 	"log"
 	"os"
@@ -103,11 +103,25 @@ func ConnectDB() *sqlx.DB {
 	// checkEnvVars verifies if all env variables have been set
 	checkEnvVars("POSTGRES_USER", "POSTGRES_PASSWORD", "DB_ADDRESS", "DB_PORT", "POSTGRES_DB")
 
-	dataSource := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", db_user, db_pswd, db_address, db_port, db_name)	
+	dataSource := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", db_address, db_port, db_user, db_name, db_pswd)	
 	client, err := sqlx.Open("postgres", dataSource)
 	if err != nil || client == nil {
-		log.Fatal("Error while opening DB: ", err)
+		log.Fatal("Error while opening DB: ", err.Error())
 	}
+
+	err = client.Ping()
+	if err != nil {
+		log.Fatalf("DBConnection error: %s", err.Error())
+	}
+
+	// Reading file with SQL instructions 
+	res, err1 := ioutil.ReadFile("instructions.sql")
+	if err1 != nil {
+		log.Fatalf("Error while reading file with instructions: %v", err1.Error())
+	}
+	var schema = string(res)
+	client.MustExec(schema)
+
 	client.SetConnMaxLifetime(time.Minute * 3)
 	client.SetMaxOpenConns(10)
 	client.SetMaxIdleConns(10)
