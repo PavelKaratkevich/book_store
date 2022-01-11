@@ -5,6 +5,7 @@ import (
 	"book_store/internal/service"
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -22,6 +23,7 @@ func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
 	res, err := bh.Service.GetAllBooks()
 	if err != nil {
+		log.Printf("Error: %v", (*err).Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
 		return
 	}
@@ -34,16 +36,19 @@ func (bh BookHandler) GetBookbyId(ctx *gin.Context) {
 
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
+		log.Printf("Error: %v", err.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Unknown error"})
 		return
 	}
 
 	res, err2 := bh.Service.GetBookById(id)
 	if err2 != nil {
 		if *err2 == sql.ErrNoRows {
+			log.Printf("Error: %v", (*err2).Error())
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "ID not found"})
 			return
 		} else {
+			log.Printf("Error: %v", (*err2).Error())
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "Unknown error"})
 			return
 		}
@@ -59,6 +64,7 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 
 	// Validating if all the fields are filled in
 	if err := ctx.ShouldBindJSON(&newBook); err != nil {
+		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -66,12 +72,14 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 	// Validating date
 	validate := validator.New()
 	if err := validate.Struct(newBook); err != nil {
+		log.Printf("Error: %v", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	res, err := bh.Service.PostNewBook(newBook)
 	if err != nil {
+		log.Printf("Error: %v", (*err).Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while making a book record"})
 		return
 	}
@@ -84,12 +92,14 @@ func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 
 	id, err1 := strconv.Atoi(ctx.Param("id"))
 	if err1 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
+		log.Printf("Error: %v", err1.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Unknown error"})
 		return
 	}
 
 	rowsDeleted, err := bh.Service.DeleteBookById(id)
 	if err != nil {
+		log.Printf("Error: %v", (*err).Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error while deleting book with %v from DB", id)})
 		return
 	}
@@ -109,6 +119,7 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	// Retrieving ID from URL
 	id, err1 := strconv.Atoi(ctx.Param("id"))
 	if err1 != nil {
+		log.Printf("Error: %v", err1.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
 		return
 	}
@@ -117,6 +128,7 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 
 	// Validating if all the fields were filled in
 	if err := ctx.ShouldBindJSON(&updateBookRequest); err != nil {
+		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -124,6 +136,7 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	// Validating date
 	validate := validator.New()
 	if err := validate.Struct(updateBookRequest); err != nil {
+		log.Printf("Error: %v", err.Error())
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -131,6 +144,7 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	// Invoking service function
 	res, err := bh.Service.UpdateBookById(updateBookRequest)
 	if err != nil {
+		log.Printf("Error: %v", (*err).Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})
 		return
 	}
