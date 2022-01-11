@@ -1,17 +1,15 @@
 package domain
 
 import (
-	// err "book_store/internal/response"
-
 	"github.com/lib/pq"
 )
 
 // Main model
 type Book struct {
 	ID      int            `json:"ID,omitempty" db:"id"`
-	Title   string         `json:"Title" db:"title" binding:"required"`
-	Authors pq.StringArray `json:"Authors" db:"authors" binding:"required"`
-	Year    string         `json:"Year" db:"year" binding:"required"`
+	Title   string         `json:"Title" db:"title" binding:"required" validate:"required"`
+	Authors pq.StringArray `json:"Authors" db:"authors" binding:"required" validate:"required"`
+	Year    string         `json:"Year" db:"year" binding:"required" validate:"required,datetime=2006-01-02"`
 }
 
 // Primary Port for the Service/Use Case implementation

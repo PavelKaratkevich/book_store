@@ -21,16 +21,3 @@ services:
 volumes:
   db:
     driver: local
-    
-# THIS IS A COPY OF MY .env FILE
-# # Postgres DB env variables
-# DB_ADDRESS=book_db
-# DB_PORT=5432
-
-# POSTGRES_USER=postgres
-# POSTGRES_PASSWORD=I240959ko
-# POSTGRES_DB=books_store
-
-# # JWT env variablies
-# ACCESS_SECRET=jdnfksdmfksd
-# REFRESH_SECRET=mcmvmkmsdnfsdmfdsjf

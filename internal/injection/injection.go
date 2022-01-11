@@ -34,8 +34,8 @@ func StartApp() *gin.Engine {
 
 	// Providing endpoint for JWT authentication
 	g.POST("/login", jwtAuth.Login())
-	
-	/* Declaring routes and handlers and enabling jwtAuth middleware 
+
+	/* Declaring routes and handlers and enabling jwtAuth middleware
 	(checking if token is provided, verified and valid for all incoming requests)
 	*/
 	routes := g.Group("/books", middleware.CheckToken())

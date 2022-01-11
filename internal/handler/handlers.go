@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 // CustomerHandler incorporates service adapter (struct)
@@ -58,7 +59,14 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 
 	// Validating if all the fields are filled in
 	if err := ctx.ShouldBindJSON(&newBook); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "All fields should be filled in"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validating date
+	validate := validator.New()
+	if err := validate.Struct(newBook); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -109,9 +117,17 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 
 	// Validating if all the fields were filled in
 	if err := ctx.ShouldBindJSON(&updateBookRequest); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "All fields should be filled in"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// Validating date
+	validate := validator.New()
+	if err := validate.Struct(updateBookRequest); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	// Invoking service function
 	res, err := bh.Service.UpdateBookById(updateBookRequest)
 	if err != nil {

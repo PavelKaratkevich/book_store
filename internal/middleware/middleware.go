@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	jwtAuth "book_store/internal/middleware/jwt"
 	"log"
 	"net/http"
-	"book_store/internal/middleware/jwt"
 
 	"github.com/gin-gonic/gin"
 )
