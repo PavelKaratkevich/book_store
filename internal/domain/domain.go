@@ -14,18 +14,18 @@ type Book struct {
 
 // Primary Port for the Service/Use Case implementation
 type Service interface {
-	GetAllBooks() ([]Book, *error)
-	GetBookById(id int) (*Book, *error)
-	PostNewBook(req Book) (int, *error)
-	DeleteBookById(id int) (int, *error)
-	UpdateBookById(req Book) (int, *error)
+	GetAllBooks() ([]Book, error)
+	GetBookById(id int) (*Book, error)
+	PostNewBook(req Book) (int, error)
+	DeleteBookById(id int) (int, error)
+	UpdateBookById(req Book) (int, error)
 }
 
 // Secondary Port for the database implementation
 type BookRepository interface {
-	GetBooks() ([]Book, *error)
-	GetBook(id int) (*Book, *error)
-	NewBook(req Book) (int, *error)
-	DeleteBook(id int) (int, *error)
-	UpdateBook(req Book) (int, *error)
+	GetBooks() ([]Book, error)
+	GetBook(id int) (*Book, error)
+	NewBook(req Book) (int, error)
+	DeleteBook(id int) (int, error)
+	UpdateBook(req Book) (int, error)
 }

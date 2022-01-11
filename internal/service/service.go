@@ -16,22 +16,22 @@ func NewBookService(repository domain.BookRepository) BookService {
 	}
 }
 
-func(b BookService) GetAllBooks() ([]domain.Book, *error) {
+func(b BookService) GetAllBooks() ([]domain.Book, error) {
 	return b.repo.GetBooks()
 }
 
-func(b BookService) GetBookById(id int) (*domain.Book, *error) {
+func(b BookService) GetBookById(id int) (*domain.Book, error) {
 	return b.repo.GetBook(id)
 }
 
-func(b BookService) PostNewBook(req domain.Book) (int, *error) {
+func(b BookService) PostNewBook(req domain.Book) (int, error) {
 	return b.repo.NewBook(req)
 }
 
-func(b BookService) DeleteBookById(id int) (int, *error) {
+func(b BookService) DeleteBookById(id int) (int, error) {
 	return b.repo.DeleteBook(id)
 }
 
-func(b BookService) UpdateBookById(req domain.Book) (int, *error) {
+func(b BookService) UpdateBookById(req domain.Book) (int, error) {
 	return b.repo.UpdateBook(req)
 }

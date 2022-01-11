@@ -18,37 +18,36 @@ type BookRepositoryPostgreSQL struct {
 	client *sqlx.DB
 }
 
-// var appError err.AppError
 var book domain.Book
 
-func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, *error) {
+func (b BookRepositoryPostgreSQL) GetBooks() ([]domain.Book, error) {
 	var books []domain.Book
 
 	sqlRequest := "select * from books_store"
 	if err := b.client.Select(&books, sqlRequest); err != nil {
-		return nil, &err
+		return nil, err
 	}
 
 	return books, nil
 }
 
-func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, *error) {
+func (b BookRepositoryPostgreSQL) GetBook(id int) (*domain.Book, error) {
 
 	sqlRequest := "select * from books_store where id = $1"
 	if err := b.client.Get(&book, sqlRequest, id); err != nil {
-		return nil, &err
+		return nil, err
 	}
 
 	return &book, nil
 }
 
-func (b BookRepositoryPostgreSQL) NewBook(req domain.Book) (int, *error) {
+func (b BookRepositoryPostgreSQL) NewBook(req domain.Book) (int, error) {
 
 	sqlRequest := "INSERT INTO books_store (Title, Authors, Year) VALUES ($1, $2, $3)"
 
 	res, err := b.client.Exec(sqlRequest, req.Title, req.Authors, req.Year)
 	if err != nil {
-		return 0, &err
+		return 0, err
 	}
 
 	rowsAdded, _ := res.RowsAffected()
@@ -56,24 +55,24 @@ func (b BookRepositoryPostgreSQL) NewBook(req domain.Book) (int, *error) {
 	return int(rowsAdded), nil
 }
 
-func (b BookRepositoryPostgreSQL) DeleteBook(id int) (int, *error) {
+func (b BookRepositoryPostgreSQL) DeleteBook(id int) (int, error) {
 
 	sqlRequest := "DELETE FROM books_store where id = $1"
 
 	res, err := b.client.Exec(sqlRequest, id)
 	if err != nil {
-		return 0, &err
+		return 0, err
 	}
 
 	rowsDeleted, _ := res.RowsAffected()
 	return int(rowsDeleted), nil
 }
 
-func (b BookRepositoryPostgreSQL) UpdateBook(req domain.Book) (int, *error) {
+func (b BookRepositoryPostgreSQL) UpdateBook(req domain.Book) (int, error) {
 
 	result, err := b.client.Exec("UPDATE books_store SET Title=$1, Authors=$2, Year=$3 where id=$4 RETURNING id", req.Title, req.Authors, req.Year, req.ID)
 	if err != nil {
-		return 0, &err
+		return 0, err
 	}
 	
 	rowsUpdated, _ := result.RowsAffected()
