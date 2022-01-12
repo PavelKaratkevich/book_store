@@ -9,10 +9,15 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/penglongli/gin-metrics/ginmetrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // StartApp function creates and returns a gin router
 func StartApp() *gin.Engine {
+
+	var public *gin.RouterGroup
+
+	gin.SetMode(gin.ReleaseMode)
 
 	// Create DB client for PostgreSQL
 	db := postgresdb.ConnectDB()
@@ -22,45 +27,43 @@ func StartApp() *gin.Engine {
 	bookService := service.NewBookService(postgresBookRepositoryDB)
 	bh := handler.BookHandler{Service: bookService}
 
-	// Creating router and defining routes and handlers
-	g := gin.Default()
+	// Creating routers and defining routes and handlers
+	appRouter := gin.Default()
+	metricRouter := gin.Default()
 
-	// Enable Prometheus metrics for the gin router
-	DoPrometheusMetrics(g)
+	m := ginmetrics.GetMonitor()
+	m.UseWithoutExposingEndpoint(appRouter)
+	m.Expose(metricRouter)
 
 	// Enabling middleware
-	g.Use(middleware.CORS())
-	g.Use(middleware.Logger())
+	appRouter.Use(middleware.CORS())
+	appRouter.Use(middleware.Logger())
 
-	// Providing endpoint for JWT authentication
-	g.POST("/login", jwtAuth.Login())
-
-	/* Declaring routes and handlers and enabling jwtAuth middleware
-	(checking if token is provided, verified and valid for all incoming requests)
-	*/
-	routes := g.Group("/books", middleware.CheckToken())
+	// switching on/off JWT Authentication depending on a Release or Test mode
+	switch gin.Mode() {
+	case gin.ReleaseMode:
+		appRouter.POST("/login", jwtAuth.Login())
+		public = appRouter.Group("/books", middleware.CheckToken())
+	case gin.TestMode:
+		public = appRouter.Group("/books")
+	}
 	{
-		routes.GET("/", bh.GetAllBook)
-		routes.GET("/:id/", bh.GetBookbyId)
-		routes.POST("/", bh.UploadNewBook)
-		routes.DELETE("/:id", bh.DeleteBook)
-		routes.PUT("/:id", bh.UpdateBook)
+		public.GET("/", bh.GetAllBook)
+		public.GET("/:id/", bh.GetBookbyId)
+		public.POST("/", bh.UploadNewBook)
+		public.DELETE("/:id", bh.DeleteBook)
+		public.PUT("/:id", bh.UpdateBook)
 	}
 
-	return g
-}
+	private := appRouter.Group("/api")
+	{
+		private.GET("/metrics/", func(ctx *gin.Context) {
+			promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
+		})
+	}
+	go func() {
+		_ = metricRouter.Run(":8081")
+	}()
 
-func DoPrometheusMetrics(router *gin.Engine) {
-	m := ginmetrics.GetMonitor()
-
-	// +optional set metric path, default /debug/metrics
-	m.SetMetricPath("/metrics")
-	// +optional set slow time, default 5s
-	m.SetSlowTime(10)
-	// +optional set request duration, default {0.1, 0.3, 1.2, 5, 10}
-	// used to p95, p99
-	m.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
-
-	// set middleware for gin
-	m.Use(router)
+	return appRouter
 }
