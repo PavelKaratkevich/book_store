@@ -1,8 +1,8 @@
-package handler
+package bookHTTP
 
 import (
+	"book_store/internal/book/service"
 	"book_store/internal/domain"
-	"book_store/internal/service"
 	"database/sql"
 	"fmt"
 	"log"

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	jwtAuth "book_store/internal/middleware/jwt"
+	jwtAuth "book_store/internal/book/delivery/middleware/jwt"
 	"log"
 	"net/http"
 

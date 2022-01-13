@@ -17,7 +17,7 @@ FROM alpine
 WORKDIR /app
 COPY --from=builder /app/app .
 COPY --from=builder /app/.env .
-COPY --from=builder /app/internal/repositoryDB/postgresDB/instructions.sql .
+COPY --from=builder /app/internal/book/repository/postgresDB/instructions.sql .
 COPY --from=builder /app/prometheus/prometheus.yml .
 
 

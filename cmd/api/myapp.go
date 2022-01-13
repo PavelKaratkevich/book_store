@@ -1,7 +1,7 @@
 package main
 
 import (
-	"book_store/internal/injection"
+	"book_store/internal/book/repository/injection"
 	"log"
 )
 

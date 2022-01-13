@@ -1,11 +1,11 @@
 package injection
 
 import (
-	"book_store/internal/handler"
-	"book_store/internal/middleware"
-	jwtAuth "book_store/internal/middleware/jwt"
-	postgresdb "book_store/internal/repositoryDB/postgresDB"
-	"book_store/internal/service"
+	"book_store/internal/book/delivery/http"
+	"book_store/internal/book/delivery/middleware"
+	postgresdb "book_store/internal/book/repository/postgresDB"
+	"book_store/internal/book/service"
+	jwtAuth "book_store/internal/book/delivery/middleware/jwt"
 
 	"github.com/gin-gonic/gin"
 	"github.com/penglongli/gin-metrics/ginmetrics"
@@ -25,7 +25,7 @@ func StartApp() *gin.Engine {
 	// Wiring
 	postgresBookRepositoryDB := postgresdb.NewBookRepositoryDb(db)
 	bookService := service.NewBookService(postgresBookRepositoryDB)
-	bh := handler.BookHandler{Service: bookService}
+	// bh := handler.BookHandler{Service: bookService}
 
 	// Creating routers and defining routes and handlers
 	appRouter := gin.Default()
@@ -37,22 +37,21 @@ func StartApp() *gin.Engine {
 
 	// switching on/off JWT Authentication depending on a Release or Test mode
 	switch gin.Mode() {
+
 	case gin.ReleaseMode:
+
 		// Enabling middleware
 		appRouter.Use(middleware.CORS())
 		appRouter.Use(middleware.Logger())
 		appRouter.POST("/login", jwtAuth.Login())
+
 		public = appRouter.Group("/books", middleware.CheckToken())
+
 	case gin.TestMode:
 		public = appRouter.Group("/books")
 	}
-	{
-		public.GET("/", bh.GetAllBook)
-		public.GET("/:id/", bh.GetBookbyId)
-		public.POST("/", bh.UploadNewBook)
-		public.DELETE("/:id", bh.DeleteBook)
-		public.PUT("/:id", bh.UpdateBook)
-	}
+
+	bookHTTP.RegisterBooksEndpoints(public, bookService)
 
 	private := appRouter.Group("/api")
 	{
