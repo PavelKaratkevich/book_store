@@ -21,7 +21,7 @@ type BookHandler struct {
 // GetAllBook sends JSON with all books listed in the database
 func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
-	res, err := bh.Service.GetAllBooks()
+	res, err := bh.Service.GetAllBooks(ctx)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
@@ -41,7 +41,7 @@ func (bh BookHandler) GetBookbyId(ctx *gin.Context) {
 		return
 	}
 
-	res, err2 := bh.Service.GetBookById(id)
+	res, err2 := bh.Service.GetBookById(ctx, id)
 	if err2 != nil {
 		if err2 == sql.ErrNoRows {
 			log.Printf("Error: %v", err2.Error())
@@ -77,7 +77,7 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 		return
 	}
 
-	res, err := bh.Service.PostNewBook(newBook)
+	res, err := bh.Service.PostNewBook(ctx, newBook)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while making a book record"})
@@ -97,7 +97,7 @@ func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 		return
 	}
 
-	rowsDeleted, err := bh.Service.DeleteBookById(id)
+	rowsDeleted, err := bh.Service.DeleteBookById(ctx, id)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error while deleting book with %v from DB", id)})
@@ -142,7 +142,7 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	}
 
 	// Invoking service function
-	res, err := bh.Service.UpdateBookById(updateBookRequest)
+	res, err := bh.Service.UpdateBookById(ctx, updateBookRequest)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})

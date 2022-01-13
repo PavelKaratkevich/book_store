@@ -3,8 +3,9 @@ package handler
 import (
 	"book_store/internal/domain"
 	"book_store/internal/domain/mocks"
-	"book_store/internal/middleware"
+	// "book_store/internal/injection"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,56 +17,72 @@ import (
 
 func Test_if_GetAllBook_Handler_Returns_Error_400_StatusBadRequest(t *testing.T) {
 
+	gin.SetMode(gin.TestMode)
+
+	var err error
+
 	// Arrange
 	mock := new(mocks.Service)
 	router := gin.Default()
 
 	rr := httptest.NewRecorder()
 
-	router.Use(middleware.Logger())
-	router.Use(middleware.CORS())
-	router.Use(middleware.CheckToken())
+	mock.On("GetAllBooks").Return(nil, err)
 
-	mock.On("GetAllBooks").Return(nil, gin.H{"error": "Please provide a valid token"})
-
-	// Act
-	request, err := http.NewRequest(http.MethodGet, "/books/", nil)
+	// Act	
+	request, err := http.NewRequest(http.MethodGet, "/books", nil)
 	assert.NoError(t, err)
 
 	router.ServeHTTP(rr, request)
 
 	// Assert
-	assert.Equal(t, 400, rr.Code)
+	assert.Equal(t, 404, rr.Code)
+
+	log.Printf("Output of the test: %v %v", rr.Code, rr.Body)
 }
 
 func Test_if_GetAllBook_Handler_Returns_Books(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
 	// Arrange
 	books := []domain.Book{
 		{
+			ID:      1,
 			Authors: pq.StringArray{"Mr Sean"},
 			Title:   "Test",
 			Year:    "2022-11-01T00:00:00Z",
 		},
 		{
+			ID:      2,
 			Authors: pq.StringArray{"Mr Paul"},
 			Title:   "Test2",
 			Year:    "2022-11-01T00:00:00Z",
 		},
 	}
 
-	expected, err := json.Marshal(books)
+	expected, err := json.Marshal(gin.H{
+		"books": books,
+	})
 	assert.NoError(t, err)
 
-	mock := new(mocks.Service)
-	mock.On("GetAllBooks").Return(books, nil)
+	log.Printf("Expected output: %v", expected)
+
 
 	rr := httptest.NewRecorder()
 	router := gin.Default()
-	
-	request, err := http.NewRequest(http.MethodPost, "/books/", nil)
+
+	mock := new(mocks.Service)
+
+	mock.On("GetAllBooks").Return(books, nil)
+
+	request, err := http.NewRequest(http.MethodGet, "/books", nil)
 	assert.NoError(t, err)
 
 	router.ServeHTTP(rr, request)
-	assert.JSONEq(t, string(expected), rr.Body.String())
+
+	log.Printf("Output of the test: %v %v", rr.Code, rr.Body)
+
+	assert.JSONEq(t, string(expected), string(rr.Body.Bytes()))
+	assert.Equal(t, 200, rr.Code)
+	mock.AssertExpectations(t)
 }

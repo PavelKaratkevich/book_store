@@ -17,7 +17,7 @@ func StartApp() *gin.Engine {
 
 	var public *gin.RouterGroup
 
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.TestMode)
 
 	// Create DB client for PostgreSQL
 	db := postgresdb.ConnectDB()
@@ -35,13 +35,12 @@ func StartApp() *gin.Engine {
 	m.UseWithoutExposingEndpoint(appRouter)
 	m.Expose(metricRouter)
 
-	// Enabling middleware
-	appRouter.Use(middleware.CORS())
-	appRouter.Use(middleware.Logger())
-
 	// switching on/off JWT Authentication depending on a Release or Test mode
 	switch gin.Mode() {
 	case gin.ReleaseMode:
+		// Enabling middleware
+		appRouter.Use(middleware.CORS())
+		appRouter.Use(middleware.Logger())
 		appRouter.POST("/login", jwtAuth.Login())
 		public = appRouter.Group("/books", middleware.CheckToken())
 	case gin.TestMode:
