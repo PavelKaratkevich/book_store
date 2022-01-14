@@ -1,7 +1,8 @@
 package domain
 
 import (
-	"github.com/gin-gonic/gin"
+	"context"
+
 	"github.com/lib/pq"
 )
 
@@ -15,18 +16,18 @@ type Book struct {
 
 // Primary Port for the Service/Use Case implementation
 type Service interface {
-	GetAllBooks(ctx *gin.Context) ([]Book, error)
-	GetBookById(ctx *gin.Context, id int) (*Book, error)
-	PostNewBook(ctx *gin.Context, req Book) (int, error)
-	DeleteBookById(ctx *gin.Context, id int) (int, error)
-	UpdateBookById(ctx *gin.Context, req Book) (int, error)
+	GetAllBooks(ctx context.Context) ([]Book, error)
+	GetBookById(ctx context.Context, id int) (*Book, error)
+	PostNewBook(ctx context.Context, req Book) (int, error)
+	DeleteBookById(ctx context.Context, id int) (int, error)
+	UpdateBookById(ctx context.Context, req Book) (int, error)
 }
 
 // Secondary Port for the database implementation
 type BookRepository interface {
-	GetBooks(ctx *gin.Context) ([]Book, error)
-	GetBook(ctx *gin.Context, id int) (*Book, error)
-	NewBook(ctx *gin.Context, req Book) (int, error)
-	DeleteBook(ctx *gin.Context, id int) (int, error)
-	UpdateBook(ctx *gin.Context, req Book) (int, error)
+	GetBooks(ctx context.Context) ([]Book, error)
+	GetBook(ctx context.Context, id int) (*Book, error)
+	NewBook(ctx context.Context, req Book) (int, error)
+	DeleteBook(ctx context.Context, id int) (int, error)
+	UpdateBook(ctx context.Context, req Book) (int, error)
 }
