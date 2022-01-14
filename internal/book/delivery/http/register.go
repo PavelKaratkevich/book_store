@@ -1,20 +1,17 @@
 package bookHTTP
 
 import (
-	"book_store/internal/book/service"
+	"book_store/internal/domain"
 
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterBooksEndpoints(g *gin.RouterGroup, h service.BookService) {
+func RegisterBooksEndpoints(g *gin.RouterGroup, h domain.Service) {
 	bh := BookHandler{Service: h}
 
-	books := g.Group("")
-	{
-		books.GET("/", bh.GetAllBook)
-		books.GET("/:id/", bh.GetBookbyId)
-		books.POST("/", bh.UploadNewBook)
-		books.DELETE("/:id", bh.DeleteBook)
-		books.PUT("/:id", bh.UpdateBook)
-	}
+	g.GET("/books", bh.GetAllBook)
+	g.GET("/books/:id", bh.GetBookbyId)
+	g.POST("/books", bh.UploadNewBook)
+	g.DELETE("/books/:id", bh.DeleteBook)
+	g.PUT("/books/:id", bh.UpdateBook)
 }

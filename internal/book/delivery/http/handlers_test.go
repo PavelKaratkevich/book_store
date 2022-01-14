@@ -1,91 +1,186 @@
 package bookHTTP
 
-// import (
-// 	"book_store/internal/book/service/mocks"
+import (
+	"book_store/internal/book/service/mocks"
+	"book_store/internal/domain"
+	"bytes"
+	"context"
+	"encoding/json"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
-// 	"book_store/internal/domain"
-// 	"encoding/json"
-// 	"log"
-// 	"net/http"
-// 	"net/http/httptest"
-// 	"testing"
+	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
+	"github.com/stretchr/testify/assert"
+)
 
-// 	"github.com/gin-gonic/gin"
-// 	"github.com/lib/pq"
-// 	"github.com/stretchr/testify/assert"
-// )
+func Test_if_GetAllBooks_Handler_Returns_Books(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
-// func Test_if_GetAllBook_Handler_Returns_Error_400_StatusBadRequest(t *testing.T) {
+	// Arrange
+	books := []domain.Book{
+		{
+			ID:      1,
+			Title:   "Check",
+			Authors: pq.StringArray{"Mr Bean"},
+			Year:    "1999-07-25T00:00:00Z",
+		},
+		{
+			ID:      2,
+			Title:   "Check",
+			Authors: pq.StringArray{"Mr Bean"},
+			Year:    "1999-07-25T00:00:00Z",
+		},
+	}
+	expected, err := json.Marshal(books)
+	assert.NoError(t, err)
 
-// 	gin.SetMode(gin.TestMode)
+	router := gin.Default()
 
-// 	var err error
+	mock := new(mocks.Service)
+	routes := router.Group("/api")
 
-// 	// Arrange
-// 	mock := new(mocks.Service)
-// 	router := gin.Default()
+	RegisterBooksEndpoints(routes, mock)
 
-// 	rr := httptest.NewRecorder()
+	mock.On("GetAllBooks", context.Background()).Return(books, nil)
 
-// 	mock.On("GetAllBooks").Return(nil, err)
+	rr := httptest.NewRecorder()
+	request, err := http.NewRequest(http.MethodGet, "/api/books", nil)
+	assert.NoError(t, err)
 
-// 	// Act	
-// 	request, err := http.NewRequest(http.MethodGet, "/books", nil)
-// 	assert.NoError(t, err)
+	router.ServeHTTP(rr, request)
 
-// 	router.ServeHTTP(rr, request)
+	log.Printf("Output of the test: %v %v", rr.Code, rr.Body)
 
-// 	// Assert
-// 	assert.Equal(t, 404, rr.Code)
+	assert.JSONEq(t, string(expected), string(rr.Body.Bytes()))
+	assert.Equal(t, 200, rr.Code)
+	mock.AssertExpectations(t)
+}
 
-// 	log.Printf("Output of the test: %v %v", rr.Code, rr.Body)
-// }
+func Test_if_GetBookbyId_Handler_Returns_Book(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
-// func Test_if_GetAllBook_Handler_Returns_Books(t *testing.T) {
-// 	gin.SetMode(gin.TestMode)
+	book := &domain.Book{
+		ID:      1,
+		Title:   "Test",
+		Authors: pq.StringArray{"Test"},
+		Year:    "2020-01-2T00:00:00Z",
+	}
 
-// 	// Arrange
-// 	books := []domain.Book{
-// 		{
-// 			ID:      1,
-// 			Authors: pq.StringArray{"Mr Sean"},
-// 			Title:   "Test",
-// 			Year:    "2022-11-01T00:00:00Z",
-// 		},
-// 		{
-// 			ID:      2,
-// 			Authors: pq.StringArray{"Mr Paul"},
-// 			Title:   "Test2",
-// 			Year:    "2022-11-01T00:00:00Z",
-// 		},
-// 	}
+	expected, err := json.Marshal(book)
+	assert.NoError(t, err)
 
-// 	expected, err := json.Marshal(gin.H{
-// 		"books": books,
-// 	})
-// 	assert.NoError(t, err)
+	mock := new(mocks.Service)
+	r := gin.Default()
 
-// 	log.Printf("Expected output: %v", expected)
+	api := r.Group("/api")
+	RegisterBooksEndpoints(api, mock)
+
+	mock.On("GetBookById", context.Background(), book.ID).Return(book, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", "/api/books/1", nil)
+	r.ServeHTTP(w, req)
+	actual := w.Body.Bytes()
+
+	log.Printf("Output of the test: %v %v", w.Code, w.Body)
+
+	assert.Equal(t, expected, actual)
+	assert.Equal(t, 200, w.Code)
+	mock.AssertExpectations(t)
+}
+
+func Test_if_PostNewBook_Handler_Returns_int(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	book := domain.Book{
+		Title:   "Test",
+		Authors: pq.StringArray{"Test"},
+		Year:    "2020-01-21",
+	}
+
+	output, err := json.Marshal(book)
+	assert.NoError(t, err)
+
+	mock := new(mocks.Service)
+	r := gin.Default()
+
+	api := r.Group("/api")
+	RegisterBooksEndpoints(api, mock)
+
+	expected, err2 := json.Marshal(1)
+	assert.NoError(t, err2)
+
+	mock.On("PostNewBook", context.Background(), book).Return(1, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/api/books", bytes.NewBuffer(output))
+
+	r.ServeHTTP(w, req)
+	actual := w.Body.Bytes()
+
+	log.Printf("Output of the test: %v %v", w.Code, w.Body)
+
+	assert.Equal(t, expected, actual)
+	assert.Equal(t, 200, w.Code)
+	mock.AssertExpectations(t)
+}
 
 
-// 	rr := httptest.NewRecorder()
-// 	router := gin.Default()
+func Test_if_DeleteBookById_Handler_Returns_Book(t *testing.T) {
+	gin.SetMode(gin.TestMode)
 
-// 	mock := new(mocks.Service)
-// 	routes := router.Group("/books")
+	bookID := 1
 
-// 	RegisterBooksEndpoints(routes, mock)
+	mock := new(mocks.Service)
+	r := gin.Default()
 
-// 	mock.On("GetAllBooks").Return(books, nil)
+	api := r.Group("/api")
+	RegisterBooksEndpoints(api, mock)
 
-// 	request, err := http.NewRequest(http.MethodGet, "/books", nil)
-// 	assert.NoError(t, err)
+	mock.On("DeleteBookById", context.Background(), bookID).Return(1, nil)
 
-// 	router.ServeHTTP(rr, request)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", "/api/books/1", nil)
+	
+	r.ServeHTTP(w, req)
 
-// 	log.Printf("Output of the test: %v %v", rr.Code, rr.Body)
+	log.Printf("Output of the test: %v %v %T", w.Code, w.Body, w.Body)
 
-// 	assert.JSONEq(t, string(expected), string(rr.Body.Bytes()))
-// 	assert.Equal(t, 200, rr.Code)
-// 	mock.AssertExpectations(t)
-// }
+	assert.Equal(t, 200, w.Code)
+	mock.AssertExpectations(t)
+}
+
+func Test_if_UpdateBookById_Handler_Returns_int(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	book := domain.Book{
+		ID: 1,
+		Title:   "Test",
+		Authors: pq.StringArray{"Test"},
+		Year:    "2020-01-21",
+	}
+
+	output, err := json.Marshal(book)
+	assert.NoError(t, err)
+
+	mock := new(mocks.Service)
+	r := gin.Default()
+
+	api := r.Group("/api")
+	RegisterBooksEndpoints(api, mock)
+	
+	mock.On("UpdateBookById", context.Background(), book).Return(1, nil)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", "/api/books/1", bytes.NewBuffer(output))
+
+	r.ServeHTTP(w, req)
+
+	log.Printf("Output of the test: %v %v", w.Code, w.Body)
+
+	assert.Equal(t, 200, w.Code)
+	mock.AssertExpectations(t)
+}

@@ -2,8 +2,7 @@ package service
 
 import (
 	"book_store/internal/domain"
-
-	"github.com/gin-gonic/gin"
+	"context"
 )
 
 // BooksService is the implementation (adapter) of Client interface
@@ -18,22 +17,22 @@ func NewBookService(repository domain.BookRepository) BookService {
 	}
 }
 
-func(b BookService) GetAllBooks(ctx *gin.Context) ([]domain.Book, error) {
+func(b BookService) GetAllBooks(ctx context.Context) ([]domain.Book, error) {
 	return b.repo.GetBooks(ctx)
 }
 
-func(b BookService) GetBookById(ctx *gin.Context, id int) (*domain.Book, error) {
+func(b BookService) GetBookById(ctx context.Context, id int) (*domain.Book, error) {
 	return b.repo.GetBook(ctx, id)
 }
 
-func(b BookService) PostNewBook(ctx *gin.Context, req domain.Book) (int, error) {
+func(b BookService) PostNewBook(ctx context.Context, req domain.Book) (int, error) {
 	return b.repo.NewBook(ctx, req)
 }
 
-func(b BookService) DeleteBookById(ctx *gin.Context, id int) (int, error) {
+func(b BookService) DeleteBookById(ctx context.Context, id int) (int, error) {
 	return b.repo.DeleteBook(ctx, id)
 }
 
-func(b BookService) UpdateBookById(ctx *gin.Context, req domain.Book) (int, error) {
+func(b BookService) UpdateBookById(ctx context.Context, req domain.Book) (int, error) {
 	return b.repo.UpdateBook(ctx, req)
 }

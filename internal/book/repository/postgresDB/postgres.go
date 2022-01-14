@@ -2,13 +2,13 @@ package postgresdb
 
 import (
 	"book_store/internal/domain"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -21,7 +21,7 @@ type BookRepositoryPostgreSQL struct {
 
 var book domain.Book
 
-func (b BookRepositoryPostgreSQL) GetBooks(ctx *gin.Context) ([]domain.Book, error) {
+func (b BookRepositoryPostgreSQL) GetBooks(ctx context.Context) ([]domain.Book, error) {
 	var books []domain.Book
 
 	sqlRequest := "select * from books_store"
@@ -32,7 +32,7 @@ func (b BookRepositoryPostgreSQL) GetBooks(ctx *gin.Context) ([]domain.Book, err
 	return books, nil
 }
 
-func (b BookRepositoryPostgreSQL) GetBook(ctx *gin.Context, id int) (*domain.Book, error) {
+func (b BookRepositoryPostgreSQL) GetBook(ctx context.Context, id int) (*domain.Book, error) {
 
 	sqlRequest := "select * from books_store where id = $1"
 	if err := b.client.Get(&book, sqlRequest, id); err != nil {
@@ -42,7 +42,7 @@ func (b BookRepositoryPostgreSQL) GetBook(ctx *gin.Context, id int) (*domain.Boo
 	return &book, nil
 }
 
-func (b BookRepositoryPostgreSQL) NewBook(ctx *gin.Context, req domain.Book) (int, error) {
+func (b BookRepositoryPostgreSQL) NewBook(ctx context.Context, req domain.Book) (int, error) {
 
 	sqlRequest := "INSERT INTO books_store (Title, Authors, Year) VALUES ($1, $2, $3)"
 
@@ -56,7 +56,7 @@ func (b BookRepositoryPostgreSQL) NewBook(ctx *gin.Context, req domain.Book) (in
 	return int(rowsAdded), nil
 }
 
-func (b BookRepositoryPostgreSQL) DeleteBook(ctx *gin.Context, id int) (int, error) {
+func (b BookRepositoryPostgreSQL) DeleteBook(ctx context.Context, id int) (int, error) {
 
 	sqlRequest := "DELETE FROM books_store where id = $1"
 
@@ -69,7 +69,7 @@ func (b BookRepositoryPostgreSQL) DeleteBook(ctx *gin.Context, id int) (int, err
 	return int(rowsDeleted), nil
 }
 
-func (b BookRepositoryPostgreSQL) UpdateBook(ctx *gin.Context, req domain.Book) (int, error) {
+func (b BookRepositoryPostgreSQL) UpdateBook(ctx context.Context, req domain.Book) (int, error) {
 
 	result, err := b.client.Exec("UPDATE books_store SET Title=$1, Authors=$2, Year=$3 where id=$4 RETURNING id", req.Title, req.Authors, req.Year, req.ID)
 	if err != nil {

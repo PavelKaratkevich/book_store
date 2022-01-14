@@ -1,7 +1,6 @@
 package bookHTTP
 
 import (
-	"book_store/internal/book/service"
 	"book_store/internal/domain"
 	"database/sql"
 	"fmt"
@@ -15,13 +14,17 @@ import (
 
 // CustomerHandler incorporates service adapter (struct)
 type BookHandler struct {
-	Service service.BookService
+	Service domain.Service
+}
+
+func NewBookHandler(service domain.Service) *BookHandler {
+	return &BookHandler{Service: service}
 }
 
 // GetAllBook sends JSON with all books listed in the database
 func (bh BookHandler) GetAllBook(ctx *gin.Context) {
 
-	res, err := bh.Service.GetAllBooks(ctx)
+	res, err := bh.Service.GetAllBooks(ctx.Request.Context())
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown error"})
@@ -41,7 +44,7 @@ func (bh BookHandler) GetBookbyId(ctx *gin.Context) {
 		return
 	}
 
-	res, err2 := bh.Service.GetBookById(ctx, id)
+	res, err2 := bh.Service.GetBookById(ctx.Request.Context(), id)
 	if err2 != nil {
 		if err2 == sql.ErrNoRows {
 			log.Printf("Error: %v", err2.Error())
@@ -77,7 +80,7 @@ func (bh BookHandler) UploadNewBook(ctx *gin.Context) {
 		return
 	}
 
-	res, err := bh.Service.PostNewBook(ctx, newBook)
+	res, err := bh.Service.PostNewBook(ctx.Request.Context(), newBook)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Error while making a book record"})
@@ -97,7 +100,7 @@ func (bh BookHandler) DeleteBook(ctx *gin.Context) {
 		return
 	}
 
-	rowsDeleted, err := bh.Service.DeleteBookById(ctx, id)
+	rowsDeleted, err := bh.Service.DeleteBookById(ctx.Request.Context(), id)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Error while deleting book with %v from DB", id)})
@@ -142,7 +145,7 @@ func (bh BookHandler) UpdateBook(ctx *gin.Context) {
 	}
 
 	// Invoking service function
-	res, err := bh.Service.UpdateBookById(ctx, updateBookRequest)
+	res, err := bh.Service.UpdateBookById(ctx.Request.Context(), updateBookRequest)
 	if err != nil {
 		log.Printf("Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal error"})

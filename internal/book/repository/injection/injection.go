@@ -45,15 +45,15 @@ func StartApp() *gin.Engine {
 		appRouter.Use(middleware.Logger())
 		appRouter.POST("/login", jwtAuth.Login())
 
-		public = appRouter.Group("/books", middleware.CheckToken())
+		public = appRouter.Group("/api", middleware.CheckToken())
 
 	case gin.TestMode:
-		public = appRouter.Group("/books")
+		public = appRouter.Group("/api")
 	}
 
 	bookHTTP.RegisterBooksEndpoints(public, bookService)
 
-	private := appRouter.Group("/api")
+	private := appRouter.Group("")
 	{
 		private.GET("/metrics/", func(ctx *gin.Context) {
 			promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
