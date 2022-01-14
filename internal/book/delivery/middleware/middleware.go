@@ -1,11 +1,8 @@
 package middleware
 
 import (
-	jwtAuth "book_store/internal/book/delivery/middleware/jwt"
-	"log"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 func CORS() gin.HandlerFunc {
@@ -26,26 +23,5 @@ func CORS() gin.HandlerFunc {
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Printf("Host: %v, Request method received: %s, Request path: %s, Status Code: %v", c.Request.Host, c.Request.Method, c.Request.URL.Path, c.Writer.Status())
-	}
-}
-
-// CheckToken verifies if the token is provided, verified and valid
-func CheckToken() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		if token := jwtAuth.ExtractToken(c.Request); token == "" {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Please provide a valid token"})
-			return
-		}
-
-		if _, err := jwtAuth.VerifyToken(c.Request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Token not verified"})
-			return
-		}
-
-		if err := jwtAuth.TokenValid(c.Request); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Token not valid"})
-			return
-		}
 	}
 }

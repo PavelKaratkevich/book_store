@@ -5,63 +5,61 @@ import (
 	"book_store/internal/book/delivery/middleware"
 	postgresdb "book_store/internal/book/repository/postgresDB"
 	"book_store/internal/book/service"
-	jwtAuth "book_store/internal/book/delivery/middleware/jwt"
+	log "github.com/sirupsen/logrus"
+	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/penglongli/gin-metrics/ginmetrics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+func initLogger() {
+	log.SetFormatter(&log.JSONFormatter{DisableHTMLEscape: true})
+	log.SetOutput(os.Stdout)
+}
+
+// checkEnvVars checks if all required envs are set
+func checkEnvVars() {
+	requiredEnvs := []string{"POSTGRES_PASSWORD", "POSTGRES_USER"}
+	var msg []string
+	for _, el := range requiredEnvs {
+		val, exists := os.LookupEnv(el)
+		if !exists || len(val) == 0 {
+			msg = append(msg, el)
+		}
+	}
+	if len(msg) > 0 {
+		log.Fatal(strings.Join(msg, ", "), " env(s) not set")
+	}
+
+}
+
 // StartApp function creates and returns a gin router
 func StartApp() *gin.Engine {
+	initLogger()
+	checkEnvVars()
+	db, err := postgresdb.ConnectDB()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var public *gin.RouterGroup
-
-	gin.SetMode(gin.TestMode)
-
-	// Create DB client for PostgreSQL
-	db := postgresdb.ConnectDB()
-
-	// Wiring
 	postgresBookRepositoryDB := postgresdb.NewBookRepositoryDb(db)
 	bookService := service.NewBookService(postgresBookRepositoryDB)
-	// bh := handler.BookHandler{Service: bookService}
-
-	// Creating routers and defining routes and handlers
-	appRouter := gin.Default()
-	metricRouter := gin.Default()
-
-	m := ginmetrics.GetMonitor()
-	m.UseWithoutExposingEndpoint(appRouter)
-	m.Expose(metricRouter)
-
-	// switching on/off JWT Authentication depending on a Release or Test mode
-	switch gin.Mode() {
-
-	case gin.ReleaseMode:
-
-		// Enabling middleware
-		appRouter.Use(middleware.CORS())
-		appRouter.Use(middleware.Logger())
-		appRouter.POST("/login", jwtAuth.Login())
-
-		public = appRouter.Group("/api", middleware.CheckToken())
-
-	case gin.TestMode:
-		public = appRouter.Group("/api")
+	router := gin.Default()
+	private := router.Group("/api")
+	public := router.Group("")
+	if gin.Mode() == gin.ReleaseMode {
+		private.Use(middleware.CORS())
+		private.Use(middleware.Logger())
+		private.Use(middleware.CheckToken())
 	}
+	bookHTTP.RegisterBooksEndpoints(private, bookService)
+	public.GET("/metrics/", func(ctx *gin.Context) {
+		promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
+	})
+	public.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "healthy"})
+	})
 
-	bookHTTP.RegisterBooksEndpoints(public, bookService)
-
-	private := appRouter.Group("")
-	{
-		private.GET("/metrics/", func(ctx *gin.Context) {
-			promhttp.Handler().ServeHTTP(ctx.Writer, ctx.Request)
-		})
-	}
-	go func() {
-		_ = metricRouter.Run(":8081")
-	}()
-
-	return appRouter
+	return router
 }
