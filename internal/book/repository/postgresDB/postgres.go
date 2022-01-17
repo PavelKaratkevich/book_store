@@ -87,12 +87,14 @@ func NewBookRepositoryDb(client *sqlx.DB) BookRepositoryPostgreSQL {
 	}
 }
 
-func ConnectDB() *sqlx.DB {
+func ConnectDB() (*sqlx.DB, error) {
 	// load environment variables
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Error loading .env file")
+		return nil, err
 	}
+
 	// get environment variables
 	db_user := os.Getenv("POSTGRES_USER")
 	db_pswd := os.Getenv("POSTGRES_PASSWORD")
@@ -100,24 +102,24 @@ func ConnectDB() *sqlx.DB {
 	db_port := os.Getenv("DB_PORT")
 	db_name := os.Getenv("POSTGRES_DB")
 
-	// checkEnvVars verifies if all env variables have been set
-	checkEnvVars("POSTGRES_USER", "POSTGRES_PASSWORD", "DB_ADDRESS", "DB_PORT", "POSTGRES_DB")
-
 	dataSource := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", db_address, db_port, db_user, db_name, db_pswd)	
 	client, err := sqlx.Open("postgres", dataSource)
 	if err != nil || client == nil {
 		log.Fatal("Error while opening DB: ", err.Error())
+		return nil, err
 	}
 
 	err = client.Ping()
 	if err != nil {
 		log.Fatalf("DBConnection error: %s", err.Error())
+		return nil, err
 	}
 
 	// Reading file with SQL instructions 
-	res, err1 := ioutil.ReadFile("instructions.sql")
-	if err1 != nil {
-		log.Fatalf("Error while reading file with instructions: %v", err1.Error())
+	res, err := ioutil.ReadFile("instructions.sql")
+	if err != nil {
+		log.Fatalf("Error while reading file with instructions: %v", err.Error())
+		return nil, err
 	}
 	var schema = string(res)
 	client.MustExec(schema)
@@ -125,13 +127,5 @@ func ConnectDB() *sqlx.DB {
 	client.SetConnMaxLifetime(time.Minute * 3)
 	client.SetMaxOpenConns(10)
 	client.SetMaxIdleConns(10)
-	return client
-}
-
-func checkEnvVars(s ...string) {
-	for _, j := range s {
-		if _, boolean := os.LookupEnv(j); !boolean {
-			log.Panicf("Env variable %v is not set", j)
-		}
-	}
+	return client, nil
 }

@@ -1,7 +1,7 @@
 package bookHTTP
 
 import (
-	"book_store/internal/book/service/mocks"
+	"book_store/internal/domain/mocks"
 	"book_store/internal/domain"
 	"bytes"
 	"context"
