@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+    book_store:
+      build: ./
+      restart: always
+      ports:
+        - 8080:8080
+      depends_on:
+        - book_db
+    book_db:
+      image: 'postgres:latest'
+      restart: always
+      ports:
+        - 5432:5432
+      env_file:
+        - .env  
+      volumes:
+        - ./db-data/:/var/lib/postgresql/data/
+    prometheus:
+      image: prom/prometheus:latest
+      volumes:
+        - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      command:
+        - '--config.file=/etc/prometheus/prometheus.yml'
+        - '--storage.tsdb.path=/prometheus'
+        - '--web.console.libraries=/etc/prometheus/console_libraries'
+        - '--web.console.templates=/etc/prometheus/consoles'
+        - '--web.enable-lifecycle'
+      ports:
+        - 9090:9090
+    grafana:
+      image: grafana/grafana:latest
+      # environment:
+      #   - GF_SMTP_ENABLED=true
+      #   - GF_SMTP_HOST=smtp.xx.net:587
+      #   - GF_SMTP_USER=myuser
+      #   - GF_SMTP_PASSWORD=mysecret
+      ports:
+        - 3001:3000
+      depends_on:
+        - prometheus
+
+volumes:
+  db:
+    driver: local

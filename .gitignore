@@ -1,0 +1,14 @@
+.env
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+go.work
+.idea
+postgres-data/
+Dockerfile
+db-data/
